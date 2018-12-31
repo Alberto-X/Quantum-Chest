@@ -9,11 +9,11 @@ local function onopen(inst)
     if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("open")
         inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
+		--this loop will go through every chest that's in QUANTUM looking for which has the items
 		for k, v in pairs(TUNING.QUANTA) do
 			if not v.components.container:IsEmpty() then
-				for i, slot in pairs(v.components.container.slots) do
-					inst.components.container:GiveItem(v.components.container:RemoveItemBySlot(i), i)
-				end
+				--this will protect the items incase the chest with the items is destroyed/burned
+				quantumtunnel(v, inst)
 			end
 		end
     end
@@ -28,6 +28,7 @@ local function onclose(inst)
 end
 
 local function onhammered(inst, worker)
+	unentangle(inst)
     if inst.components.burnable ~= nil and inst.components.burnable:IsBurning() then
         inst.components.burnable:Extinguish()
     end
@@ -38,7 +39,7 @@ local function onhammered(inst, worker)
     local fx = SpawnPrefab("collapse_small")
     fx.Transform:SetPosition(inst.Transform:GetWorldPosition())
     fx:SetMaterial("wood")
-	unentangle(inst)
+	--when destroyed...
     inst:Remove()
 end
 
@@ -47,7 +48,7 @@ local function onhit(inst, worker)
         inst.AnimState:PlayAnimation("hit")
         inst.AnimState:PushAnimation("closed", false)
         if inst.components.container ~= nil then
-            inst.components.container:DropEverything()
+            --inst.components.container:DropEverything()
             inst.components.container:Close()
         end
     end
@@ -57,7 +58,6 @@ local function onbuilt(inst)
     inst.AnimState:PlayAnimation("place")
     inst.AnimState:PushAnimation("closed", false)
     inst.SoundEmitter:PlaySound("dontstarve/common/chest_craft")
-	entangle(inst)
 end
 
 local function onsave(inst, data)
@@ -70,6 +70,7 @@ local function onload(inst, data)
     if data ~= nil and data.burnt and inst.components.burnable ~= nil then
         inst.components.burnable.onburnt(inst)
 	else
+		--to make sure they're still entangled whe you load the world/game
 		entangle(inst)
 	end
 end
@@ -122,8 +123,8 @@ local function MakeChest(name, bank, build, indestructible, custom_postinit, pre
             inst.components.workable:SetOnFinishCallback(onhammered)
             inst.components.workable:SetOnWorkCallback(onhit)
 
-            MakeSmallBurnable(inst, nil, nil, true)
-            MakeMediumPropagator(inst)
+            --MakeSmallBurnable(inst, nil, nil, true)
+            --MakeMediumPropagator(inst)
         end
 
         inst:AddComponent("hauntable")
@@ -135,6 +136,8 @@ local function MakeChest(name, bank, build, indestructible, custom_postinit, pre
         inst.OnSave = onsave 
         inst.OnLoad = onload
 
+		entangle(inst)
+		
         if custom_postinit ~= nil then
             custom_postinit(inst)
         end

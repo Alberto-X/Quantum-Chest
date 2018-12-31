@@ -39,26 +39,42 @@ GLOBAL.ACTIONS.RUMMAGE.fn = function(act)
 	end
 end
 
+--from is from which container, and target is where the items are going
+GLOBAL.quantumtunnel = function(from, target)
+	for i, slot in pairs(from.components.container.slots) do
+		--This will loop through every item in the chest with the items and move them to the called one
+		target.components.container:GiveItem(from.components.container:RemoveItemBySlot(i), i)
+	end
+end
+
 GLOBAL.unentangle = function(inst)
 	print(tostring(inst).." has been unentangled(aka removed to TUNING.QUANTA).")
 	local position = nil
+	--backup chest incase the destroyed/unentangled chest is the one currently holding the items
+	local backup = nil
 	for k, v in pairs(TUNING.QUANTA) do
 		if v.GUID == inst.GUID then
 			position = k
-			break
+		elseif v.components.container:IsEmpty() then
+			backup = k
 		end
+	end
+	if not TUNING.QUANTA[position].components.container:IsEmpty() and backup ~= nil then
+		GLOBAL.quantumtunnel(TUNING.QUANTA[position], TUNING.QUANTA[backup])
 	end
 	table.remove(TUNING.QUANTA, position)
 end
 
-local function quantumburnt(component)
-	if component.inst:HasTag("quantum") then
-		component.inst:ListenForEvent("onburnt", GLOBAL.unentangle)
-	end
-end
+--keep burnable functionality if you want it back
+-- local function quantumburnt(component)
+	-- if component.inst:HasTag("quantum") then
+		-- component.inst:ListenForEvent("onburnt", GLOBAL.unentangle)
+	-- end
+-- end
 	
-AddComponentPostInit("burnable", quantumburnt)
+-- AddComponentPostInit("burnable", quantumburnt)
 
+--container for the chest
 --------------------------------------------------------------------------
 --[[ treasurechest_quantum ]]
 --------------------------------------------------------------------------
