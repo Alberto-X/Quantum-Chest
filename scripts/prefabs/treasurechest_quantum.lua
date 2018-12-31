@@ -9,6 +9,13 @@ local function onopen(inst)
     if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("open")
         inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
+		for k, v in pairs(TUNING.QUANTA) do
+			if not v.components.container:IsEmpty() then
+				for i, slot in pairs(v.components.container.slots) do
+					inst.components.container:GiveItem(v.components.container:RemoveItemBySlot(i), i)
+				end
+			end
+		end
     end
 end 
 

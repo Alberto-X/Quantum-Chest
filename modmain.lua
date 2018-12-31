@@ -23,12 +23,29 @@ AddRecipe("treasurechest_quantum", {GLOBAL.Ingredient("boards", 3), GLOBAL.Ingre
 
 GLOBAL.TUNING.QUANTA = {}
 
+local RUMMAGEFN = GLOBAL.ACTIONS.RUMMAGE.fn
+
+GLOBAL.ACTIONS.RUMMAGE.fn = function(act)
+	local targ = act.target or act.invobject
+	if targ:HasTag("quantum") and not targ.components.container:IsOpen() then
+		for k, v in pairs(TUNING.QUANTA) do
+			if v.components.container:IsOpen() then
+				return false, "INUSE"
+			end
+		end
+		return RUMMAGEFN(act)
+	else
+		return RUMMAGEFN(act)
+	end
+end
+
 GLOBAL.unentangle = function(inst)
 	print(tostring(inst).." has been unentangled(aka removed to TUNING.QUANTA).")
 	local position = nil
 	for k, v in pairs(TUNING.QUANTA) do
 		if v.GUID == inst.GUID then
 			position = k
+			break
 		end
 	end
 	table.remove(TUNING.QUANTA, position)
