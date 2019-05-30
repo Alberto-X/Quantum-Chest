@@ -16,7 +16,7 @@ GLOBAL.STRINGS.NAMES.TREASURECHEST_QUANTUM = "Quantumly Entangled Chest"
 GLOBAL.STRINGS.RECIPE_DESC.TREASURECHEST_QUANTUM = "Instant accessibility."
 GLOBAL.STRINGS.CHARACTERS.GENERIC.DESCRIBE.TREASURECHEST_QUANTUM = "This could be useful..."
 GLOBAL.STRINGS.CHARACTERS.WICKERBOTTOM.DESCRIBE.TREASURECHEST_QUANTUM = "Quantum mechanics is not my specialty, but I won't question it."
-GLOBAL.STRINGS.CHARACTERS.WENDY.DESCRIBE.TREASURECHEST_QUANTUM = "Can it teleport my heart away?"
+GLOBAL.STRINGS.CHARACTERS.WENDY.DESCRIBE.TREASURECHEST_QUANTUM = "Are you in there Abigail?"
 GLOBAL.STRINGS.CHARACTERS.WAXWELL.DESCRIBE.TREASURECHEST_QUANTUM = "Oh Charlie, what have you done..."
 
 AddRecipe("treasurechest_quantum", {GLOBAL.Ingredient("boards", 3), GLOBAL.Ingredient("nightmarefuel", 2)}, GLOBAL.RECIPETABS.MAGIC, GLOBAL.TECH.MAGIC_ONE, "treasurechest_placer", 1, nil, 1, nil, "images/inventoryimages/treasurechest_quantum.xml", "treasurechest_quantum.tex")
@@ -25,9 +25,10 @@ GLOBAL.TUNING.QUANTA = {}
 
 local RUMMAGEFN = GLOBAL.ACTIONS.RUMMAGE.fn
 
+--this is the only code that actually changes original game code
 GLOBAL.ACTIONS.RUMMAGE.fn = function(act)
 	local targ = act.target or act.invobject
-	if targ:HasTag("quantum") and not targ.components.container:IsOpen() then
+	if targ.prefab == "treasurechest_quantum" and not targ.components.container:IsOpen() then
 		for k, v in pairs(TUNING.QUANTA) do
 			if v.components.container:IsOpen() then
 				return false, "INUSE"
@@ -39,30 +40,14 @@ GLOBAL.ACTIONS.RUMMAGE.fn = function(act)
 	end
 end
 
---from is from which container, and target is where the items are going
+--'from' is from which container, and target is where the items are going
 GLOBAL.quantumtunnel = function(from, target)
-	for i, slot in pairs(from.components.container.slots) do
-		--This will loop through every item in the chest with the items and move them to the called one
-		target.components.container:GiveItem(from.components.container:RemoveItemBySlot(i), i)
-	end
-end
-
-GLOBAL.unentangle = function(inst)
-	print(tostring(inst).." has been unentangled(aka removed to TUNING.QUANTA).")
-	local position = nil
-	--backup chest incase the destroyed/unentangled chest is the one currently holding the items
-	local backup = nil
-	for k, v in pairs(TUNING.QUANTA) do
-		if v.GUID == inst.GUID then
-			position = k
-		elseif v.components.container:IsEmpty() then
-			backup = k
+	if from ~= nil and target ~= nil then
+		for i, slot in pairs(from.components.container.slots) do
+			--This will loop through every item in the chest with the items and move them to the called one
+			target.components.container:GiveItem(from.components.container:RemoveItemBySlot(i), i)
 		end
 	end
-	if not TUNING.QUANTA[position].components.container:IsEmpty() and backup ~= nil then
-		GLOBAL.quantumtunnel(TUNING.QUANTA[position], TUNING.QUANTA[backup])
-	end
-	table.remove(TUNING.QUANTA, position)
 end
 
 --keep burnable functionality if you want it back

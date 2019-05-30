@@ -5,6 +5,24 @@ local function entangle(inst)
 	table.insert(TUNING.QUANTA, inst)
 end
 
+local function unentangle(inst)
+	print(tostring(inst).." has been unentangled(aka removed to TUNING.QUANTA).")
+	local position = nil
+	--backup chest incase the destroyed/unentangled chest is the one currently holding the items
+	local backup = nil
+	for k, v in pairs(TUNING.QUANTA) do
+		if v.GUID == inst.GUID then
+			position = k
+		elseif v.components.container:IsEmpty() then
+			backup = k
+		end
+	end
+	if not TUNING.QUANTA[position].components.container:IsEmpty() and backup ~= nil then
+		GLOBAL.quantumtunnel(TUNING.QUANTA[position], TUNING.QUANTA[backup])
+	end
+	table.remove(TUNING.QUANTA, position)
+end
+
 local function onopen(inst)
     if not inst:HasTag("burnt") then
         inst.AnimState:PlayAnimation("open")
