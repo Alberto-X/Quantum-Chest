@@ -18,7 +18,7 @@ local function unentangle(inst)
 		end
 	end
 	if not TUNING.QUANTA[position].components.container:IsEmpty() and backup ~= nil then
-		GLOBAL.quantumtunnel(TUNING.QUANTA[position], TUNING.QUANTA[backup])
+		quantumtunnel(TUNING.QUANTA[position], TUNING.QUANTA[backup])
 	end
 	table.remove(TUNING.QUANTA, position)
 end
